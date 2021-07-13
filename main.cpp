@@ -38,14 +38,18 @@ static std::string formatToString(T num, unsigned int precision = 60u) {
 
 int (__stdcall * ChannelControl_setVolume)(void *, float);
 
-#define HIDE_SPRITE(spr, opacity)           \
-    spr->setOpacity(opacity);               \
-    spr->stopAllActions();                  \
-    spr->runAction(CCSequence::create(      \
-        CCDelayTime::create(1.0f),          \
-        CCFadeTo::create(.6f, 0),          \
-        nullptr                             \
-    ));                                     \
+template <typename T>
+static void HIDE_SPRITE(
+    T* sprite,
+    const GLubyte opacity)
+{
+    sprite->setOpacity(opacity);
+    sprite->stopAllActions();
+    sprite->runAction(cocos2d::CCSequence::create(
+        cocos2d::CCDelayTime::create(1.0f),
+        cocos2d::CCFadeTo::create(.6f, 0),
+        nullptr));
+}
 
 class VolumeControlOverlay : public CCNode {
     protected:
