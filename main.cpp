@@ -61,6 +61,7 @@ class VolumeControlOverlay : public CCNode {
         CCLabelBMFont* m_pPercentMusic;
         CCLabelBMFont* m_pPercentSFX;
         CCLabelBMFont* m_pShiftLabel;
+        CCLabelBMFont* m_pControlLabel;
 
         bool init(const int tag) {
             if (!CCNode::init())
@@ -146,6 +147,14 @@ class VolumeControlOverlay : public CCNode {
 
             this->addChild(m_pShiftLabel);
 
+
+            m_pControlLabel = CCLabelBMFont::create("Hold Control to Fine-tune", "bigFont.fnt");
+            m_pControlLabel->setScale(.3f);
+            m_pControlLabel->setPosition(0, 0);
+
+            this->addChild(m_pControlLabel);
+
+
             this->setTag(tag);
 
             return true;
@@ -167,16 +176,17 @@ class VolumeControlOverlay : public CCNode {
         void show() {
             auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-            HIDE_SPRITE(m_pSliderMusic->m_pSliderBar, 255)
-            HIDE_SPRITE(m_pSliderMusic->m_pGroove, 255)
-            HIDE_SPRITE(m_pSliderSFX->m_pSliderBar, 255)
-            HIDE_SPRITE(m_pSliderSFX->m_pGroove, 255)
-            HIDE_SPRITE(m_pLabelMusic, 255)
-            HIDE_SPRITE(m_pLabelSFX, 255)
-            HIDE_SPRITE(m_pPercentMusic, 255)
-            HIDE_SPRITE(m_pPercentSFX, 255)
-            HIDE_SPRITE(m_pShiftLabel, 255)
-            HIDE_SPRITE(m_pBG, 205)
+            HIDE_SPRITE(m_pSliderMusic->m_pSliderBar, 255);
+            HIDE_SPRITE(m_pSliderMusic->m_pGroove, 255);
+            HIDE_SPRITE(m_pSliderSFX->m_pSliderBar, 255);
+            HIDE_SPRITE(m_pSliderSFX->m_pGroove, 255);
+            HIDE_SPRITE(m_pLabelMusic, 255);
+            HIDE_SPRITE(m_pLabelSFX, 255);
+            HIDE_SPRITE(m_pPercentMusic, 255);
+            HIDE_SPRITE(m_pPercentSFX, 255);
+            HIDE_SPRITE(m_pShiftLabel, 255);
+            HIDE_SPRITE(m_pControlLabel, 100);
+            HIDE_SPRITE(m_pBG, 205);
 
             this->setPosition({
                 winSize.width - 120.0f,
@@ -238,7 +248,14 @@ bool __fastcall dispatchScrollMSGHook(CCMouseDelegate* self, edx_t, float deltaY
             scene->addChild(overlay, 9999);
         }
 
-        overlay->updateValue(-deltaY, kb->getShiftKeyPressed());
+        auto offset = -deltaY;
+
+        if (kb->getControlKeyPressed())
+            offset /= 6.0f;
+
+        std::cout << offset << "\n";
+
+        overlay->updateValue(offset, kb->getShiftKeyPressed());
         overlay->show();
 
         return true;
