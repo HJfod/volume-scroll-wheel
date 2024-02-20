@@ -8,6 +8,7 @@
 	"name": "Quick Volume Controls",
 	"developer": "HJfod",
 	"description": "Adjust volume via Alt + Scroll Wheel!",
+	"repository": "https://github.com/HJfod/volume-scroll-wheel",
 	"incompatibilities": [
 		{
 			"id": "tpdea.volume_scroll",
