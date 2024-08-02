@@ -1,9 +1,9 @@
 {
-	"geode": "2.0.0-beta.19",
+	"geode": "3.4.0",
 	"gd": {
-		"win": "2.204"
+		"win": "2.206"
 	},
-	"version": "v1.0.1",
+	"version": "v1.1.0",
 	"id": "hjfod.quick-volume-controls",
 	"name": "Quick Volume Controls",
 	"developer": "HJfod",
