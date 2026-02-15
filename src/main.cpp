@@ -102,7 +102,7 @@ public:
 
 	void updateValue(float add, bool slow, bool sfx) {
 		auto fe = FMODAudioEngine::sharedEngine();
-		auto value = clamp((sfx ? fe->m_sfxVolume : fe->m_musicVolume) + add / 240 * (slow ? .15f : 1), 0, 1);
+		auto value = std::clamp((sfx ? fe->m_sfxVolume : fe->m_musicVolume) + add / 240 * (slow ? .15f : 1), 0.f, 1.f);
 		auto str = std::to_string(static_cast<int>(value * 100)) + "%";
 		(sfx ? m_sfxSlider : m_musicSlider)->setValue(value);
 		(sfx ? m_sfxSlider : m_musicSlider)->updateBar();
