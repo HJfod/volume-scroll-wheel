@@ -1,4 +1,3 @@
-#include <Geode/binding/Slider.hpp>
 #include <Geode/modify/CCMouseDispatcher.hpp>
 
 using namespace geode::prelude;
@@ -6,13 +5,13 @@ using namespace geode::prelude;
 class VolumeControlOverlay : public CCNode {
 protected:
 	CCScale9Sprite* m_bg;
-	CCLabelBMFont* m_musicTitle;
+	Label* m_musicTitle;
 	Slider* m_musicSlider;
-	CCLabelBMFont* m_musicPercent;
-	CCLabelBMFont* m_sfxTitle;
+	Label* m_musicPercent;
+	Label* m_sfxTitle;
 	Slider* m_sfxSlider;
-	CCLabelBMFont* m_sfxPercent;
-	CCLabelBMFont* m_sfxShiftInfo;
+	Label* m_sfxPercent;
+	Label* m_sfxShiftInfo;
 
 	bool init() {
 		if (!CCNode::init())
@@ -30,7 +29,7 @@ protected:
 		m_bg->setOpacity(205);
 		this->addChildAtPosition(m_bg, Anchor::Center);
 
-		m_musicTitle = CCLabelBMFont::create("Music", "goldFont.fnt");
+		m_musicTitle = geode::Label::create("Music", "goldFont.fnt");
 		m_musicTitle->setAnchorPoint({ .0f, .5f });
 		this->addChildAtPosition(m_musicTitle, Anchor::TopLeft, ccp(20, -20));
 
@@ -39,11 +38,11 @@ protected:
 		m_musicSlider->m_touchLogic->m_thumb->setVisible(false);
 		this->addChildAtPosition(m_musicSlider, Anchor::Top, ccp(0, -20));
 
-		m_musicPercent = CCLabelBMFont::create("", "bigFont.fnt");
+		m_musicPercent = geode::Label::create("", "bigFont.fnt");
 		m_musicPercent->setAnchorPoint({ 1.f, .5f });
 		this->addChildAtPosition(m_musicPercent, Anchor::TopRight, ccp(-20, -20));
 
-		m_sfxTitle = CCLabelBMFont::create("SFX", "goldFont.fnt");
+		m_sfxTitle = geode::Label::create("SFX", "goldFont.fnt");
 		m_sfxTitle->setAnchorPoint({ .0f, .5f });
 		this->addChildAtPosition(m_sfxTitle, Anchor::BottomLeft, ccp(20, 28));
 
@@ -52,11 +51,11 @@ protected:
 		m_sfxSlider->m_touchLogic->m_thumb->setVisible(false);
 		this->addChildAtPosition(m_sfxSlider, Anchor::Bottom, ccp(0, 20));
 
-		m_sfxPercent = CCLabelBMFont::create("", "bigFont.fnt");
+		m_sfxPercent = geode::Label::create("", "bigFont.fnt");
 		m_sfxPercent->setAnchorPoint({ 1.f, .5f });
 		this->addChildAtPosition(m_sfxPercent, Anchor::BottomRight, ccp(-20, 20));
 
-		m_sfxShiftInfo = CCLabelBMFont::create("(Shift)", "bigFont.fnt");
+		m_sfxShiftInfo = geode::Label::create("(Shift)", "bigFont.fnt");
 		m_sfxShiftInfo->setAnchorPoint({ 0.f, .5f });
 		m_sfxShiftInfo->setScale(.35f);
 		this->addChildAtPosition(m_sfxShiftInfo, Anchor::BottomLeft, ccp(20, 10));
@@ -91,26 +90,28 @@ protected:
 
 public:
 	static VolumeControlOverlay* get() {
-		if (auto existing = CCScene::get()->getChildByID("overlay"_spr)) {
+		auto overlay = OverlayManager::get();
+		if (auto existing = overlay->getChildByID("overlay"_spr)) {
 			return static_cast<VolumeControlOverlay*>(existing);
 		}
 		auto create = VolumeControlOverlay::create();
 		create->setID("overlay"_spr);
-		CCScene::get()->addChildAtPosition(create, Anchor::BottomRight, ccp(-10, 10), false);
+		overlay->addChildAtPosition(create, Anchor::BottomRight, ccp(-10, 10), true);
 		return create;
 	}
 
 	void updateValue(float add, bool slow, bool sfx) {
 		auto fe = FMODAudioEngine::sharedEngine();
-		auto value = std::clamp((sfx ? fe->m_sfxVolume : fe->m_musicVolume) + add / 240 * (slow ? .15f : 1), 0.f, 1.f);
+		auto value = std::clamp((sfx ? fe->m_sfxVolume : fe->m_musicVolume) + add / 240.f * (slow ? .15f : 1), 0.f, 1.f);
+		value = std::round(value * 100.f) / 100.f; // I hate float precision
 		auto str = std::to_string(static_cast<int>(value * 100)) + "%";
 		(sfx ? m_sfxSlider : m_musicSlider)->setValue(value);
 		(sfx ? m_sfxSlider : m_musicSlider)->updateBar();
 		(sfx ? fe->m_globalChannel : fe->m_backgroundMusicChannel)->setVolume(value);
 		(sfx ? fe->m_sfxVolume : fe->m_musicVolume) = value;
 		(sfx ? m_sfxPercent : m_musicPercent)->setString(str.c_str());
-		(sfx ? m_sfxPercent : m_musicPercent)->limitLabelWidth(60.f, .8f, .1f);
-		(sfx ? m_sfxTitle : m_musicTitle)->limitLabelWidth(60.f, .9f, .1f);
+		(sfx ? m_sfxPercent : m_musicPercent)->setLimitLabelWidth(60.f, .8f, .1f);
+		(sfx ? m_sfxTitle : m_musicTitle)->setLimitLabelWidth(60.f, .9f, .1f);
 
 		(sfx ? m_sfxTitle : m_musicTitle)->setColor({ 255, 255, 255 });
 		(sfx ? m_musicTitle : m_sfxTitle)->setColor({ 100, 100, 100 });
@@ -134,7 +135,7 @@ public:
 class $modify(CCMouseDispatcher) {
 	bool dispatchScrollMSG(float y, float x) {
 		auto kb = CCKeyboardDispatcher::get();
-		if (kb->getAltKeyPressed()) {
+		if (kb->getAltKeyPressed() && y != 0.f) {
         	VolumeControlOverlay::get()->updateValue(-y, kb->getControlKeyPressed(), kb->getShiftKeyPressed());
 			return true;
 		}
